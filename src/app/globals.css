@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --primary-color: #4f46e5;
+  --secondary-color: #f1f5f9;
+  --background-color: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent-color: #e2e8f0;
+  --border-color: #e2e8f0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-[var(--background-color)] text-[var(--text-primary)] font-["Inter","Noto_Sans",sans-serif];
+}
+
+/* Badges de estado reutilizadas en varias páginas */
+.status-pending {
+  @apply bg-yellow-100 text-yellow-800;
+}
+.status-active {
+  @apply bg-green-100 text-green-800;
+}
+.status-inactive {
+  @apply bg-red-100 text-red-800;
 }
