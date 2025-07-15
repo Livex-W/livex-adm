@@ -1,5 +1,4 @@
-import UsersFilters from '@/components/users/UsersFilters';
-import UsersTable from '@/components/users/UsersTable';
+import UsersList from '@/components/users/UsersList';
 // import UsersPagination from '@/components/users/UsersPagination';
 
 export default function UsersPage() {
@@ -18,11 +17,7 @@ export default function UsersPage() {
             </div>
 
             {/* Tarjeta */}
-            <div className="bg-[var(--container-bg)] rounded-lg shadow-sm border border-gray-200">
-                <UsersFilters />
-                <UsersTable />
-                {/* <UsersPagination /> */}
-            </div>
+            <UsersList />
         </div>
     );
 }

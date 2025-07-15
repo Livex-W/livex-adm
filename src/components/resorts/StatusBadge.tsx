@@ -1,12 +1,14 @@
+import { ResortStatus } from "@/types/resort";
+
 interface StatusBadgeProps {
-    status: 'Pending' | 'Active' | 'Inactive';
+    status: ResortStatus;
 }
 
-const statusMap = {
-    Pending: 'status-pending',
-    Active: 'status-active',
-    Inactive: 'status-inactive',
-} as const;
+const statusMap: Record<ResortStatus, string> = {
+    [ResortStatus.pending]: 'status-pending',
+    [ResortStatus.active]: 'status-active',
+    [ResortStatus.inactive]: 'status-inactive',
+};
 
 /**
  * Muestra la “pill” de estado usando utilidades Tailwind + clases personalizadas.

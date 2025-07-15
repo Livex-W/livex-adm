@@ -9,7 +9,7 @@ export default function ResortsTable() {
     console.log(resorts);
 
     return (
-        <div className="overflow-hidden rounded-lg border border-gray-2 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
@@ -26,7 +26,7 @@ export default function ResortsTable() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                     {resorts.map((r) => (
-                        <ResortTableRow key={r.id} resort={r} />
+                        <ResortTableRow key={r.resortId} resort={r} />
                     ))}
                 </tbody>
             </table>

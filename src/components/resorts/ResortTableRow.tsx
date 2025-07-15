@@ -1,21 +1,13 @@
+import { useResortsStore } from '@/stores/useResortsStore';
 import StatusBadge from './StatusBadge';
-
-export interface Resort {
-    id: string;
-    name: string;
-    logo: string;
-    owner: string;
-    contact: string;
-    city: string;
-    status: 'Pending' | 'Active' | 'Inactive';
-    createdAt: string;
-}
+import { Resort } from '@/types/resort';
 
 export default function ResortTableRow({
     resort,
 }: {
     resort: Resort;
 }) {
+    const getAddresses = useResortsStore((s) => s.getAddresses);
     return (
         <tr className="hover:bg-gray-50">
             <td className="whitespace-nowrap px-6 py-4">
@@ -29,19 +21,19 @@ export default function ResortTableRow({
                 </div>
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {resort.owner}
+                {resort.ownerName}
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {resort.contact}
+                {resort.email}
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {resort.city}
+                {getAddresses(resort.resortId).map((a) => a.city).join(', ')}
             </td>
             <td className="whitespace-nowrap px-6 py-4">
                 <StatusBadge status={resort.status} />
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                {resort.createdAt}
+                {resort.createdAt.toISOString().split('T')[0]}
             </td>
             <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                 <a href="#" className="text-indigo-600 hover:text-indigo-900">

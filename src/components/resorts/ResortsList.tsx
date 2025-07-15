@@ -1,12 +1,14 @@
 "use client";
 
 import Filters from '@/components/resorts/Filters';
+import { useQueryResorts } from '@/hooks/resorts/useQueryResorts';
 import ResortsTable from '@/components/resorts/ResortsTable';
 
 export default function ResortsList() {
+    const { isLoading } = useQueryResorts();
 
     return (
-        <div className="mx-auto max-w-7xl">
+        <div className="bg-[var(--container-bg)] container mx-auto rounded-lg min-h-[300px]">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <h2 className="text-3xl font-bold tracking-tight text-gray-900">
                     Resort Management
@@ -26,8 +28,14 @@ export default function ResortsList() {
                 </button>
             </div>
 
-            <Filters />
-            <ResortsTable />
+            {isLoading ? (
+                <div className="p-8 text-center text-gray-500">Loading resorts…</div>
+            ) : (
+                <>
+                    <Filters />
+                    <ResortsTable />
+                </>
+            )}
         </div>
     );
 }

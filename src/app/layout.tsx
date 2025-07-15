@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/common/Header";
+import Providers from "./providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,7 +23,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`flex min-h-screen flex-col ${inter.variable}`}>
         <Header />
-        <main className="flex-1 px-8 py-10 lg:px-16">{children}</main>
+        <main className="flex-1 px-8 py-10 lg:px-16">
+          <Providers>
+            {children}
+          </Providers>
+        </main>
       </body>
     </html>
   );

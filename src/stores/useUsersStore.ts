@@ -33,6 +33,7 @@ interface UsersState {
     goToPage: (p: number) => void;
     nextPage: () => void;
     prevPage: () => void;
+    setUsers: (u: User[]) => void;
 }
 
 const mock: User[] = [
@@ -136,5 +137,13 @@ export const useUsersStore = create<UsersState>((set, get) => {
                 set({ ...next, ...getDerived(next) });
             }
         },
+
+        /**
+         * Reemplaza la lista de usuarios con datos externos (p.e. repositorio).
+         */
+        setUsers: (users) => {
+            const next = { ...get(), users, page: 1 };
+            set({ ...next, ...getDerived(next) });
+        }
     };
 });
