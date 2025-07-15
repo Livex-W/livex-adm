@@ -1,8 +1,7 @@
 'use client';
 
 import { useResortsStore } from '@/stores/useResortsStore';
-
-const options = ['All', 'Pending', 'Active', 'Inactive'] as const;
+import { ResortStatus } from '@/types/resort';
 
 export default function Filters() {
     const filter = useResortsStore((state) => state.filter);
@@ -12,7 +11,7 @@ export default function Filters() {
         <div className="mb-4 flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">Filter by status:</span>
             <div className="flex gap-2">
-                {options.map((opt) => {
+                {Object.values(ResortStatus).map((opt) => {
                     const selected = filter === opt;
                     return (
                         <button
