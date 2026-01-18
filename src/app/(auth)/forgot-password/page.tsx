@@ -2,7 +2,7 @@
 
 import { ROUTES } from '@/routes';
 
-import { useForm } from 'react-hook-form';
+import { useForm } from "react-hook-form";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuthStore } from '@/lib/auth-store';
@@ -13,7 +13,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { AuthError, getErrorMessage } from '@/types/errors';
 
 const forgotPasswordSchema = z.object({
-    email: z.string().email('Email inválido'),
+    email: z.email('Email inválido'),
 });
 
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;

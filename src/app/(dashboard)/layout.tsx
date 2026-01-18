@@ -24,12 +24,7 @@ export default function DashboardLayout({
 
     useEffect(() => {
         if (!isLoading) {
-            if (!user) {
-                router.push(ROUTES.AUTH.LOGIN);
-            } else if (user.role === 'agent') {
-                // Redirect agents to their dashboard
-                router.push(ROUTES.AGENT.HOME);
-            }
+            router.push(ROUTES.AUTH.LOGIN);
         }
     }, [isLoading, user, router]);
 
