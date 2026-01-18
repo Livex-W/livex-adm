@@ -23,7 +23,7 @@ export default function DashboardLayout({
     }, [refreshUser]);
 
     useEffect(() => {
-        if (!isLoading) {
+        if (!isLoading && !user) {
             router.push(ROUTES.AUTH.LOGIN);
         }
     }, [isLoading, user, router]);
