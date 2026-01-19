@@ -26,7 +26,7 @@ export default function ResortDetailPage() {
     const params = useParams();
     const resortId = params.id as string;
 
-    const { fetchResortById, approveResort, rejectResort } = useAdminStore();
+    const { fetchResortById, approveResort, rejectResort, approveDocument, rejectDocument } = useAdminStore();
 
     const [resort, setResort] = useState<ResortProfile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -34,6 +34,9 @@ export default function ResortDetailPage() {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [showDocRejectModal, setShowDocRejectModal] = useState(false);
+    const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+    const [docRejectReason, setDocRejectReason] = useState('');
 
     useEffect(() => {
         const loadResort = async () => {
@@ -80,6 +83,46 @@ export default function ResortDetailPage() {
             setRejectReason('');
         } catch (err) {
             setError('Error al rechazar el resort');
+            console.error(err);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDocumentApprove = async (docId: string) => {
+        setActionLoading(true);
+        try {
+            await approveDocument(docId);
+            const data = await fetchResortById(resortId);
+            setResort(data);
+        } catch (err) {
+            setError('Error al aprobar el documento');
+            console.error(err);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDocumentReject = (docId: string) => {
+        setSelectedDocId(docId);
+        setShowDocRejectModal(true);
+    };
+
+    const confirmDocumentReject = async () => {
+        if (!docRejectReason.trim() || !selectedDocId) {
+            setError('Debes proporcionar un motivo de rechazo');
+            return;
+        }
+        setActionLoading(true);
+        try {
+            await rejectDocument(selectedDocId, docRejectReason);
+            const data = await fetchResortById(resortId);
+            setResort(data);
+            setShowDocRejectModal(false);
+            setSelectedDocId(null);
+            setDocRejectReason('');
+        } catch (err) {
+            setError('Error al rechazar el documento');
             console.error(err);
         } finally {
             setActionLoading(false);
@@ -284,25 +327,56 @@ export default function ResortDetailPage() {
                                 {resort.documents.map((doc) => (
                                     <div
                                         key={doc.id}
-                                        className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                                        className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg space-y-3"
                                     >
-                                        <div>
-                                            <p className="font-medium text-slate-900 dark:text-slate-100 capitalize">
-                                                {doc.doc_type.replace(/_/g, ' ')}
-                                            </p>
-                                            <p className="text-xs text-slate-500">
-                                                {formatDate(doc.uploaded_at)}
-                                            </p>
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <p className="font-medium text-slate-900 dark:text-slate-100 capitalize">
+                                                    {doc.doc_type.replace(/_/g, ' ')}
+                                                </p>
+                                                <p className="text-xs text-slate-500">
+                                                    {formatDate(doc.uploaded_at)}
+                                                </p>
+                                            </div>
+                                            <StatusBadge status={doc.status === 'uploaded' ? 'under_review' : doc.status} />
                                         </div>
-                                        <a
-                                            href={doc.file_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-primary hover:underline text-sm flex items-center gap-1"
-                                        >
-                                            Ver
-                                            <ExternalLink className="h-3 w-3" />
-                                        </a>
+
+                                        {doc.rejection_reason && (
+                                            <p className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                                                {doc.rejection_reason}
+                                            </p>
+                                        )}
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+                                            <a
+                                                href={doc.file_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-primary hover:underline text-sm flex items-center gap-1"
+                                            >
+                                                Ver
+                                                <ExternalLink className="h-3 w-3" />
+                                            </a>
+
+                                            {doc.status !== 'approved' && doc.status !== 'rejected' && (
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleDocumentReject(doc.id)}
+                                                        className="cursor-pointer text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
+                                                    >
+                                                        <XCircle className="h-3 w-3" />
+                                                        Rechazar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDocumentApprove(doc.id)}
+                                                        className="cursor-pointer text-xs text-green-600 hover:text-green-700 flex items-center gap-1"
+                                                    >
+                                                        <CheckCircle className="h-3 w-3" />
+                                                        Aprobar
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -347,6 +421,48 @@ export default function ResortDetailPage() {
                             <Button
                                 onClick={handleReject}
                                 disabled={actionLoading || !rejectReason.trim()}
+                                isLoading={actionLoading}
+                                className="flex-1 bg-red-600 hover:bg-red-700"
+                            >
+                                Rechazar
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Document Reject Modal */}
+            {showDocRejectModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                        className="absolute inset-0 bg-black/50"
+                        onClick={() => setShowDocRejectModal(false)}
+                    />
+                    <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+                            Rechazar Documento
+                        </h3>
+                        <p className="text-slate-500 mb-4">
+                            Por favor proporciona un motivo para el rechazo del documento.
+                        </p>
+                        <textarea
+                            value={docRejectReason}
+                            onChange={(e) => setDocRejectReason(e.target.value)}
+                            placeholder="Motivo del rechazo..."
+                            className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                            rows={4}
+                        />
+                        <div className="flex gap-3 mt-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => setShowDocRejectModal(false)}
+                                className="flex-1"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={confirmDocumentReject}
+                                disabled={actionLoading || !docRejectReason.trim()}
                                 isLoading={actionLoading}
                                 className="flex-1 bg-red-600 hover:bg-red-700"
                             >

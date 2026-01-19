@@ -38,6 +38,8 @@ interface AdminState {
     fetchResortById: (id: string) => Promise<ResortProfile>;
     approveResort: (id: string) => Promise<void>;
     rejectResort: (id: string, reason: string) => Promise<void>;
+    approveDocument: (id: string) => Promise<void>;
+    rejectDocument: (id: string, reason: string) => Promise<void>;
     fetchExperiences: (params?: { page?: number; limit?: number; resortId?: string }) => Promise<void>;
     fetchBookings: (params?: { page?: number; limit?: number; resortId?: string }) => Promise<void>;
 }
@@ -103,16 +105,24 @@ export const useAdminStore = create<AdminState>()((set) => ({
     },
 
     fetchResortById: async (id: string) => {
-        const response = await apiClient.get<ResortProfile>(`/api/v1/resorts/${id}`);
+        const response = await apiClient.get<ResortProfile>(`/api/v1/admin/resorts/${id}`);
         return response.data;
     },
 
     approveResort: async (id: string) => {
-        await apiClient.post(`/api/v1/resorts/${id}/approve`, {});
+        await apiClient.post(`/api/v1/admin/resorts/${id}/approve`, {});
     },
 
     rejectResort: async (id: string, reason: string) => {
-        await apiClient.post(`/api/v1/resorts/${id}/reject`, { rejection_reason: reason });
+        await apiClient.post(`/api/v1/admin/resorts/${id}/reject`, { rejection_reason: reason });
+    },
+
+    approveDocument: async (id: string) => {
+        await apiClient.post(`/api/v1/admin/documents/${id}/approve`, {});
+    },
+
+    rejectDocument: async (id: string, reason: string) => {
+        await apiClient.post(`/api/v1/admin/documents/${id}/reject`, { rejection_reason: reason });
     },
 
     fetchExperiences: async (params = {}) => {
