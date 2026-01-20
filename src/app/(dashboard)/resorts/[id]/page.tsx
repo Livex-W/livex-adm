@@ -166,21 +166,21 @@ export default function ResortDetailPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-start gap-3">
                     <Link href={ROUTES.DASHBOARD.RESORTS.LIST}>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="flex-shrink-0 mt-1">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
-                    <div>
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">
                                 {resort.name || 'Sin nombre'}
                             </h1>
                             {getStatusBadge(resort.status)}
                         </div>
-                        <p className="text-slate-500 mt-1">
+                        <p className="text-sm text-slate-500 mt-1">
                             Creado el {formatDate(resort.created_at)}
                         </p>
                     </div>
@@ -188,23 +188,25 @@ export default function ResortDetailPage() {
 
                 {/* Action Buttons */}
                 {resort.status === 'under_review' && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 ml-10 sm:ml-0">
                         <Button
                             variant="outline"
+                            size="sm"
                             onClick={() => setShowRejectModal(true)}
                             disabled={actionLoading}
                             className="text-red-600 border-red-200 hover:bg-red-50"
                         >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Rechazar
+                            <XCircle className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Rechazar</span>
                         </Button>
                         <Button
+                            size="sm"
                             onClick={handleApprove}
                             disabled={actionLoading}
                             isLoading={actionLoading}
                         >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Aprobar
+                            <CheckCircle className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Aprobar</span>
                         </Button>
                     </div>
                 )}
