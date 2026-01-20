@@ -107,16 +107,16 @@ async function fetchAdminAgents(params: QueryParams): Promise<PaginatedResult<Ag
 }
 
 async function fetchResortById(id: string): Promise<ResortProfile> {
-    const response = await apiClient.get<ResortProfile>(`/api/v1/resorts/${id}`);
+    const response = await apiClient.get<ResortProfile>(`/api/v1/admin/resorts/${id}`);
     return response.data;
 }
 
 async function approveResort(id: string): Promise<void> {
-    await apiClient.post(`/api/v1/resorts/${id}/approve`, {});
+    await apiClient.post(`/api/v1/admin/resorts/${id}/approve`, {});
 }
 
 async function rejectResort(id: string, reason: string): Promise<void> {
-    await apiClient.post(`/api/v1/resorts/${id}/reject`, { rejection_reason: reason });
+    await apiClient.post(`/api/v1/admin/resorts/${id}/reject`, { rejection_reason: reason });
 }
 
 // Hooks

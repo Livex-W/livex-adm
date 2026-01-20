@@ -21,6 +21,7 @@ import { formatCurrency } from '@/lib/utils';
 import Image from 'next/image';
 import { useAdminExperiences } from '@/hooks/useAdmin';
 import { ROUTES } from '@/routes';
+import { getCategoryName } from '@/lib/categories';
 
 // Custom hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
@@ -198,7 +199,7 @@ export default function ExperiencesPage() {
                                                         <div className="text-xs text-slate-500 font-mono">ID: {exp.id.slice(0, 8)}...</div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant="outline" className="capitalize">{exp.category}</Badge>
+                                                        <Badge variant="outline" className="capitalize">{getCategoryName(exp.category)}</Badge>
                                                     </TableCell>
                                                     <TableCell>
                                                         {exp.allows_children ? (
@@ -280,7 +281,7 @@ export default function ExperiencesPage() {
 
                                                     <div className="mt-1 flex flex-wrap items-center gap-2">
                                                         <Badge variant="outline" size="sm" className="capitalize text-xs">
-                                                            {exp.category}
+                                                            {getCategoryName(exp.category)}
                                                         </Badge>
                                                         {exp.allows_children ? (
                                                             <Badge variant="outline" size="sm" className="text-green-600 border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800 text-[10px] px-1.5 h-5">

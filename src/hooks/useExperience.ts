@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
 import { CreateExperienceFormData, transformToApiPayload } from '@/schemas/experience.schema';
 import { ImageFile } from '@/components/experiences';
@@ -195,31 +195,53 @@ export function transformBlocksToPayload(experienceId: string, blocks: Availabil
 
 // Hooks
 export function useCreateExperience() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: ({ data, resortId }: { data: CreateExperienceFormData; resortId: string }) =>
             createExperience(data, resortId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['my-experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'experiences'] });
+        },
     });
 }
 
 export function useUploadExperienceImage() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: ({ experienceId, image, sortOrder }: {
             experienceId: string;
             image: ImageFile;
             sortOrder: number;
         }) => uploadExperienceImage(experienceId, image, sortOrder),
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['experience', variables.experienceId] });
+        },
     });
 }
 
 export function useCreateAvailabilitySlots() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: (payload: BulkCreateSlotsPayload) => createAvailabilitySlots(payload),
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['experience', variables.experienceId] });
+        },
     });
 }
 
 export function useCreateMultiBlockAvailability() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: (payload: BulkMultiBlockPayload) => createMultiBlockAvailability(payload),
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['experience', variables.experienceId] });
+        },
     });
 }
 
@@ -316,8 +338,15 @@ export function useExperience(id: string) {
 
 // Hook for deleting experience
 export function useDeleteExperience() {
+    const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: (id: string) => deleteExperience(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['my-experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'experiences'] });
+        },
     });
 }
 
