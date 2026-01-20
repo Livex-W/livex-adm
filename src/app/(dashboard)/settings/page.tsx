@@ -12,7 +12,7 @@ import { MapPin, Building2, FileText, Save, ExternalLink, CheckCircle, Clock, Al
 // Document types
 const DOC_TYPES = [
     { type: 'camara_comercio' as const, label: 'Cámara de Comercio' },
-    { type: 'rut_nit' as const, label: 'RUT' },
+    { type: 'nit' as const, label: 'RUT' },
     { type: 'rnt' as const, label: 'RNT' },
     { type: 'other' as const, label: 'Otro Documento' },
 ] as const;
