@@ -40,14 +40,16 @@ export default function LoginPage() {
         try {
             const user = await login(data);
 
-            // Validate that the user is an admin
-            if (user.role !== 'admin') {
+            // Allow admin and partner roles
+            if (user.role === 'admin') {
+                router.push(ROUTES.DASHBOARD.HOME);
+            } else if (user.role === 'partner') {
+                router.push(ROUTES.PARTNER.HOME);
+            } else {
                 logout();
-                setError('Acceso denegado. Solo los administradores pueden acceder a este panel.');
+                setError('Acceso denegado. Solo administradores y partners pueden acceder a este panel.');
                 return;
             }
-
-            router.push(ROUTES.DASHBOARD.HOME);
         } catch (err) {
             const authError = err as AuthError;
             setError(getErrorMessage(authError));

@@ -31,10 +31,26 @@ export const ROUTES = {
             LIST: '/agents',
             NEW: '/agents/new',
         },
+        PARTNERS: {
+            LIST: '/partners',
+            NEW: '/partners/new',
+            DETAIL: (id: string) => `/partners/${id}`,
+        },
         USERS: '/users',
         FINANCES: '/finances',
         REVIEWS: '/reviews',
         SETTINGS: '/settings',
+    },
+
+    // Partner Pages
+    PARTNER: {
+        HOME: '/partner',
+        REFERRAL_CODES: {
+            LIST: '/partner/referral-codes',
+            DETAIL: (id: string) => `/partner/referral-codes/${id}`,
+        },
+        BOOKINGS: '/partner/bookings',
+        SETTINGS: '/partner/settings',
     },
 } as const;
 
@@ -43,7 +59,7 @@ export const ROUTES = {
  */
 export const isRouteActive = (currentPath: string, route: string): boolean => {
     // Exact match for home routes to avoid false positives with child routes
-    if (route === ROUTES.DASHBOARD.HOME) {
+    if (route === ROUTES.DASHBOARD.HOME || route === ROUTES.PARTNER.HOME) {
         return currentPath === route;
     }
     return currentPath.startsWith(route);

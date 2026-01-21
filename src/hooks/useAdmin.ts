@@ -36,6 +36,62 @@ interface Agent {
     total_commission_cents: number;
 }
 
+interface Partner {
+    id: string;
+    email: string;
+    full_name: string;
+    phone: string | null;
+    created_at: string;
+    codes_count: number;
+    total_revenue_cents: number;
+}
+
+interface PartnerReferralCode {
+    id: string;
+    code: string;
+    code_type: string;
+    agent_commission_type: string;
+    agent_commission_cents: number;
+    discount_type: string | null;
+    discount_value: number;
+    is_active: boolean;
+    usage_count: number;
+    usage_limit: number | null;
+    expires_at: string | null;
+    description: string | null;
+    created_at: string;
+    revenue_cents: number;
+    bookings_count: number;
+}
+
+interface PartnerDetail {
+    id: string;
+    email: string;
+    full_name: string;
+    phone: string | null;
+    created_at: string;
+    referralCodes: PartnerReferralCode[];
+    stats: {
+        total_revenue: number;
+        total_bookings: number;
+        confirmed_bookings: number;
+    };
+}
+
+interface CreatePartnerData {
+    email: string;
+    password: string;
+    fullName: string;
+    phone?: string;
+}
+
+interface CreatePartnerCodeData {
+    code: string;
+    commissionType: 'percentage' | 'fixed';
+    commissionValue: number;
+    description?: string;
+}
+
 // Query Keys
 export const adminQueryKeys = {
     all: ['admin'] as const,
@@ -49,6 +105,9 @@ export const adminQueryKeys = {
     experiencesList: (params: QueryParams) => [...adminQueryKeys.experiences(), 'list', params] as const,
     agents: () => [...adminQueryKeys.all, 'agents'] as const,
     agentsList: (params: QueryParams) => [...adminQueryKeys.agents(), 'list', params] as const,
+    partners: () => [...adminQueryKeys.all, 'partners'] as const,
+    partnersList: (params: QueryParams) => [...adminQueryKeys.partners(), 'list', params] as const,
+    partnerDetail: (id: string) => [...adminQueryKeys.partners(), 'detail', id] as const,
 };
 
 // API Functions
@@ -106,6 +165,23 @@ async function fetchAdminAgents(params: QueryParams): Promise<PaginatedResult<Ag
     return response.data;
 }
 
+async function fetchAdminPartners(params: QueryParams): Promise<PaginatedResult<Partner>> {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.search) queryParams.append('search', params.search);
+
+    const response = await apiClient.get<PaginatedResult<Partner>>(
+        `/api/v1/admin/partners?${queryParams.toString()}`
+    );
+    return response.data;
+}
+
+async function fetchPartnerById(id: string): Promise<PartnerDetail> {
+    const response = await apiClient.get<PartnerDetail>(`/api/v1/admin/partners/${id}`);
+    return response.data;
+}
+
 async function fetchResortById(id: string): Promise<ResortProfile> {
     const response = await apiClient.get<ResortProfile>(`/api/v1/admin/resorts/${id}`);
     return response.data;
@@ -119,6 +195,19 @@ async function rejectResort(id: string, reason: string): Promise<void> {
     await apiClient.post(`/api/v1/admin/resorts/${id}/reject`, { rejection_reason: reason });
 }
 
+async function createPartner(data: CreatePartnerData): Promise<Partner> {
+    const response = await apiClient.post<Partner>('/api/v1/admin/partners', data);
+    return response.data;
+}
+
+async function createPartnerCode(partnerId: string, data: CreatePartnerCodeData): Promise<PartnerReferralCode> {
+    const response = await apiClient.post<PartnerReferralCode>(
+        `/api/v1/admin/partners/${partnerId}/referral-codes`,
+        data
+    );
+    return response.data;
+}
+
 // Hooks
 
 /**
@@ -128,8 +217,8 @@ export function useAdminStats() {
     return useQuery({
         queryKey: adminQueryKeys.stats(),
         queryFn: fetchAdminStats,
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 10 * 60 * 1000, // 10 minutes
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
     });
 }
 
@@ -140,8 +229,8 @@ export function useAdminResorts(params: QueryParams = {}) {
     return useQuery({
         queryKey: adminQueryKeys.resortsList(params),
         queryFn: () => fetchAdminResorts(params),
-        staleTime: 2 * 60 * 1000, // 2 minutes
-        gcTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 2 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
     });
 }
 
@@ -152,8 +241,8 @@ export function useAdminBookings(params: QueryParams = {}) {
     return useQuery({
         queryKey: adminQueryKeys.bookingsList(params),
         queryFn: () => fetchAdminBookings(params),
-        staleTime: 2 * 60 * 1000, // 2 minutes
-        gcTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 2 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
     });
 }
 
@@ -164,8 +253,8 @@ export function useAdminExperiences(params: QueryParams = {}) {
     return useQuery({
         queryKey: adminQueryKeys.experiencesList(params),
         queryFn: () => fetchAdminExperiences(params),
-        staleTime: 2 * 60 * 1000, // 2 minutes
-        gcTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 2 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
     });
 }
 
@@ -176,8 +265,33 @@ export function useAdminAgents(params: QueryParams = {}) {
     return useQuery({
         queryKey: adminQueryKeys.agentsList(params),
         queryFn: () => fetchAdminAgents(params),
-        staleTime: 2 * 60 * 1000, // 2 minutes
-        gcTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 2 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
+    });
+}
+
+/**
+ * Hook for admin partners list with filtering - cached for 2 minutes
+ */
+export function useAdminPartners(params: QueryParams = {}) {
+    return useQuery({
+        queryKey: adminQueryKeys.partnersList(params),
+        queryFn: () => fetchAdminPartners(params),
+        staleTime: 2 * 60 * 1000,
+        gcTime: 5 * 60 * 1000,
+    });
+}
+
+/**
+ * Hook for single partner detail - cached for 5 minutes
+ */
+export function usePartnerDetail(id: string) {
+    return useQuery({
+        queryKey: adminQueryKeys.partnerDetail(id),
+        queryFn: () => fetchPartnerById(id),
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+        enabled: !!id,
     });
 }
 
@@ -203,7 +317,6 @@ export function useApproveResort() {
     return useMutation({
         mutationFn: (id: string) => approveResort(id),
         onSuccess: () => {
-            // Invalidate relevant queries to refetch
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats() });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.resorts() });
         },
@@ -219,9 +332,37 @@ export function useRejectResort() {
     return useMutation({
         mutationFn: ({ id, reason }: { id: string; reason: string }) => rejectResort(id, reason),
         onSuccess: () => {
-            // Invalidate relevant queries to refetch
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.stats() });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.resorts() });
+        },
+    });
+}
+
+/**
+ * Hook for creating a partner
+ */
+export function useCreatePartner() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: CreatePartnerData) => createPartner(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.partners() });
+        },
+    });
+}
+
+/**
+ * Hook for creating a partner referral code
+ */
+export function useCreatePartnerCode(partnerId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: CreatePartnerCodeData) => createPartnerCode(partnerId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.partnerDetail(partnerId) });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.partners() });
         },
     });
 }

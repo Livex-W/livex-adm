@@ -5,7 +5,7 @@ export interface User {
     id: string;
     email: string;
     fullName: string;
-    role: 'user' | 'resort' | 'agent' | 'admin';
+    role: 'user' | 'resort' | 'agent' | 'admin' | 'partner';
     avatar?: string; // changed from avatar_url to match backend DTO likely or null
     phone?: string;
     isVip?: boolean;

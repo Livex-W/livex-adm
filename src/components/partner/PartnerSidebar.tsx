@@ -6,42 +6,36 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
     LayoutDashboard,
-    Compass,
+    Link2,
     CalendarDays,
-    Building2,
-    // Settings,
+    Settings,
     LogOut,
     X,
-    Users,
-    UserPlus
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/auth-store';
 import { Button } from '@/components/ui';
 import { ROUTES, isRouteActive } from '@/routes';
 
-interface SidebarProps {
+interface PartnerSidebarProps {
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
 }
 
-export interface NavItem {
+interface NavItem {
     label: string;
     href: string;
     icon: React.ComponentType<{ className?: string }>;
 }
 
-// Admin navigation items
+// Partner navigation items
 const NAV_ITEMS: NavItem[] = [
-    { label: 'Dashboard', href: ROUTES.DASHBOARD.HOME, icon: LayoutDashboard },
-    { label: 'Resorts', href: ROUTES.DASHBOARD.RESORTS.LIST, icon: Building2 },
-    { label: 'Experiencias', href: ROUTES.DASHBOARD.EXPERIENCES.LIST, icon: Compass },
-    { label: 'Reservas', href: ROUTES.DASHBOARD.BOOKINGS, icon: CalendarDays },
-    { label: 'Agentes', href: ROUTES.DASHBOARD.AGENTS.LIST, icon: Users },
-    { label: 'Partners', href: ROUTES.DASHBOARD.PARTNERS.LIST, icon: UserPlus },
-    // { label: 'Configuración', href: ROUTES.DASHBOARD.SETTINGS, icon: Settings },
+    { label: 'Dashboard', href: ROUTES.PARTNER.HOME, icon: LayoutDashboard },
+    { label: 'Códigos de Referido', href: ROUTES.PARTNER.REFERRAL_CODES.LIST, icon: Link2 },
+    { label: 'Historial de Reservas', href: ROUTES.PARTNER.BOOKINGS, icon: CalendarDays },
+    { label: 'Configuración', href: ROUTES.PARTNER.SETTINGS, icon: Settings },
 ];
 
-export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
+export function PartnerSidebar({ isOpen, setIsOpen }: PartnerSidebarProps) {
     const pathname = usePathname();
     const { logout, user } = useAuthStore();
 
@@ -71,8 +65,9 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             >
                 {/* Logo Header */}
                 <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-slate-800">
-                    <Link href={ROUTES.DASHBOARD.HOME} className="flex items-center gap-2 font-bold text-xl text-primary">
-                        <span>Livex ADM</span>
+                    <Link href={ROUTES.PARTNER.HOME} className="flex items-center gap-2 font-bold text-xl">
+                        <span className="text-primary">Livex ADM</span>
+                        <span className="text-slate-600 dark:text-slate-300 text-sm font-normal">Partner</span>
                     </Link>
                     <button
                         onClick={() => setIsOpen(false)}
@@ -114,11 +109,11 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <div className="p-4 border-t border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs">
-                            {user?.fullName?.substring(0, 2).toUpperCase() || 'RS'}
+                            {user?.fullName?.substring(0, 2).toUpperCase() || 'PA'}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                                {user?.fullName || 'Resort User'}
+                                {user?.fullName || 'Partner'}
                             </p>
                             <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                 {user?.email}

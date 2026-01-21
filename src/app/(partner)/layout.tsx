@@ -1,51 +1,52 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Sidebar, Header } from '@/components/dashboard';
+import { PartnerSidebar } from '@/components/partner';
+import { Header } from '@/components/dashboard';
 import { useAuthStore } from '@/lib/auth-store';
 import { useRouter } from 'next/navigation';
 import { PageLoader } from '@/components/ui';
 import { ROUTES } from '@/routes';
 
-export default function DashboardLayout({
+export default function PartnerLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const { user, isLoading, refreshUser } = useAuthStore();
+    const { user, isLoading, checkAuth } = useAuthStore();
     const router = useRouter();
 
-
     useEffect(() => {
-        // Hydrate user on mount if needed, handled by persist middleware mostly but refresh confirms validity
-        refreshUser().catch(() => { });
-    }, [refreshUser]);
+        checkAuth().catch(() => { });
+    }, [checkAuth]);
 
     useEffect(() => {
         if (!isLoading) {
             if (!user) {
                 router.push(ROUTES.AUTH.LOGIN);
-            } else if (user.role === 'partner') {
-                // Redirect partners to their dashboard
-                router.push(ROUTES.PARTNER.HOME);
+            } else if (user.role !== 'partner') {
+                // Redirect non-partners to their respective dashboards
+                if (user.role === 'admin') {
+                    router.push(ROUTES.DASHBOARD.HOME);
+                } else {
+                    router.push(ROUTES.AUTH.LOGIN);
+                }
             }
         }
     }, [isLoading, user, router]);
 
-    // Prevent flash of unauthorized content while checking auth
     if (isLoading) {
         return <div className="min-h-screen flex items-center justify-center"><PageLoader /></div>;
     }
 
-    // If no user after loading, show loader while redirecting
-    if (!user) {
+    if (!user || user.role !== 'partner') {
         return <div className="min-h-screen flex items-center justify-center"><PageLoader /></div>;
     }
 
     return (
         <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300">
-            <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+            <PartnerSidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
             <div className="flex-1 flex flex-col min-w-0 transition-all duration-300 h-full">
                 <Header onMenuClick={() => setSidebarOpen(true)} />
