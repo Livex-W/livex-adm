@@ -5,7 +5,7 @@ import apiClient from './api-client';
 import { STORAGE_KEYS } from './constants';
 import { security } from '@/utils/security';
 
-type ResortDocType = 'camara_comercio' | 'rut_nit' | 'rnt' | 'other';
+type ResortDocType = 'camara_comercio' | 'nit' | 'rnt' | 'other';
 
 interface UpdateResortGeneralData {
     name?: string;
