@@ -89,6 +89,8 @@ interface CreatePartnerCodeData {
     code: string;
     commissionType: 'percentage' | 'fixed';
     commissionValue: number;
+    discountType?: 'percentage' | 'fixed' | 'none';
+    discountValue?: number;
     description?: string;
 }
 
