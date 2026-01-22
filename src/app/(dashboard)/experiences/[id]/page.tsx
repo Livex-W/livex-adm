@@ -145,17 +145,25 @@ export default function ExperienceDetailPage() {
                             <h3 className="text-md font-semibold text-green-700 dark:text-green-400 mb-3">
                                 ✓ Incluye
                             </h3>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm whitespace-pre-wrap">
-                                {experience.includes || 'No especificado'}
-                            </p>
+                            <ol>
+                                {experience.includes?.split(',').map((include, index) => (
+                                    <li key={index} className="text-slate-600 dark:text-slate-400 text-sm whitespace-pre-wrap">
+                                        • {include}
+                                    </li>
+                                ))}
+                            </ol>
                         </Card>
                         <Card className="p-6">
                             <h3 className="text-md font-semibold text-red-700 dark:text-red-400 mb-3">
                                 ✗ No Incluye
                             </h3>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm whitespace-pre-wrap">
-                                {experience.excludes || 'No especificado'}
-                            </p>
+                            <ol>
+                                {experience.excludes?.split(',').map((exclude, index) => (
+                                    <li key={index} className="text-slate-600 dark:text-slate-400 text-sm whitespace-pre-wrap">
+                                        • {exclude}
+                                    </li>
+                                ))}
+                            </ol>
                         </Card>
                     </div>
                 </div>

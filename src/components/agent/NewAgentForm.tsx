@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button, Card, Input, PhoneInput, PasswordInput } from '@/components/ui';
 import { Save } from 'lucide-react';
-import { useResortStore } from '@/lib/resort-store';
 import { useAgentsStore } from '@/lib/agents-store';
 import { ROUTES } from '@/routes';
 import { toast } from 'sonner';
@@ -44,11 +43,11 @@ type CreateAgentFormData = z.infer<typeof createAgentSchema>;
 
 export default function NewAgentForm() {
     const router = useRouter();
-    const { resort } = useResortStore();
     const { createAgent } = useAgentsStore();
 
     const form = useForm<CreateAgentFormData>({
         resolver: zodResolver(createAgentSchema),
+        mode: 'onTouched',
         defaultValues: {
             fullName: '',
             documentType: 'CC',
@@ -63,11 +62,6 @@ export default function NewAgentForm() {
     });
 
     const onSubmit = async (data: CreateAgentFormData) => {
-        if (!resort?.id) {
-            toast.error('No se encontró el resort asociado.');
-            return;
-        }
-
         try {
             const commissionFixedCents = Math.round(parseFloat(data.commissionAmount) * 100);
 
@@ -81,7 +75,6 @@ export default function NewAgentForm() {
                 nit: data.nit || undefined,
                 rnt: data.rnt || undefined,
                 commissionFixedCents,
-                resortId: resort.id,
             });
 
             toast.success('Agente creado exitosamente');
@@ -208,7 +201,6 @@ export default function NewAgentForm() {
                         type="submit"
                         isLoading={form.formState.isSubmitting}
                         leftIcon={<Save className="h-4 w-4" />}
-                        disabled={!resort?.id}
                     >
                         Crear Agente
                     </Button>

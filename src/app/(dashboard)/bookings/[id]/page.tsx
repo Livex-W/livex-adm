@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import apiClient from '@/lib/api-client';
+import { useAdminBookingDetail } from '@/hooks/useAdmin';
 import { Button, Card, StatusBadge } from '@/components/ui';
 import { ROUTES } from '@/routes';
 import {
@@ -22,44 +21,6 @@ import {
     Briefcase
 } from 'lucide-react';
 
-interface BookingDetail {
-    id: string;
-    adults: number;
-    children: number;
-    total_cents: number;
-    resort_net_cents: number;
-    agent_commission_cents: number;
-    agent_payment_type: string;
-    amount_paid_to_agent_cents: number;
-    amount_paid_to_resort_cents: number;
-    currency: string;
-    status: string;
-    booking_source: string;
-    created_at: string;
-    experience: {
-        id: string;
-        title: string;
-        main_image_url: string;
-        currency: string;
-    };
-    slot: {
-        id: string;
-        start_time: string;
-        end_time: string;
-    };
-    client: {
-        id: string;
-        full_name: string;
-        email: string;
-        phone: string;
-    };
-    agent?: {
-        id: string;
-        full_name: string;
-        email: string;
-    };
-}
-
 const paymentTypeLabels: Record<string, string> = {
     full_at_resort: 'Pago completo en Resort',
     deposit_to_agent: 'Abono al Agente',
@@ -75,33 +36,9 @@ const statusConfig: Record<string, { label: string; variant: string }> = {
 
 export default function ResortBookingDetailPage() {
     const { id } = useParams();
-    const [booking, setBooking] = useState<BookingDetail | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const bookingId = typeof id === 'string' ? id : id?.[0] ?? '';
 
-    useEffect(() => {
-        const fetchBooking = async () => {
-            try {
-                // Fetch list and find. Ideal would be a getOne endpoint.
-                const response = await apiClient.get<{ data: BookingDetail[] }>('/api/v1/bookings/resort');
-                const found = response.data.data?.find(b => b.id === id);
-                if (found) {
-                    setBooking(found);
-                } else {
-                    setError('Reserva no encontrada');
-                }
-            } catch (err) {
-                console.error('Error fetching booking', err);
-                setError('Error al cargar la reserva');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        if (id) {
-            fetchBooking();
-        }
-    }, [id]);
+    const { data: booking, isLoading, error } = useAdminBookingDetail(bookingId);
 
     const formatCurrency = (cents: number, currency = 'COP') => {
         return new Intl.NumberFormat('es-CO', {
@@ -143,7 +80,7 @@ export default function ResortBookingDetailPage() {
     if (error || !booking) {
         return (
             <div className="text-center py-16">
-                <p className="text-red-500 font-medium mb-4">{error || 'Reserva no encontrada'}</p>
+                <p className="text-red-500 font-medium mb-4">{error?.message || 'Reserva no encontrada'}</p>
                 <Link href={ROUTES.DASHBOARD.BOOKINGS}>
                     <Button variant="outline" leftIcon={<ArrowLeft className="h-4 w-4" />}>
                         Volver a Reservas
@@ -167,10 +104,10 @@ export default function ResortBookingDetailPage() {
                 <div className="flex flex-col md:flex-row">
                     {/* Image */}
                     <div className="h-48 md:h-auto md:w-64 bg-slate-100 flex-shrink-0 relative">
-                        {booking.experience.main_image_url ? (
+                        {booking.experience_image ? (
                             <Image
-                                src={booking.experience.main_image_url}
-                                alt={booking.experience.title}
+                                src={booking.experience_image}
+                                alt={booking.experience_title}
                                 fill
                                 className="object-cover"
                             />
@@ -186,7 +123,7 @@ export default function ResortBookingDetailPage() {
                         <div className="flex items-start justify-between gap-4 mb-4">
                             <div>
                                 <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                                    {booking.experience.title}
+                                    {booking.experience_title}
                                 </h1>
                                 <p className="text-sm text-slate-500 mt-1">
                                     ID: {booking.id}
@@ -198,11 +135,11 @@ export default function ResortBookingDetailPage() {
                         <div className="flex flex-wrap items-center gap-4 text-slate-600 dark:text-slate-400">
                             <span className="flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-indigo-500" />
-                                {formatDate(booking.slot.start_time)}
+                                {formatDate(booking.slot_start_time)}
                             </span>
                             <span className="flex items-center gap-2">
                                 <Clock className="h-5 w-5 text-indigo-500" />
-                                {formatTime(booking.slot.start_time)}
+                                {formatTime(booking.slot_start_time)}
                             </span>
                         </div>
                     </div>
@@ -223,19 +160,19 @@ export default function ResortBookingDetailPage() {
                         <div className="flex items-center gap-3">
                             <User className="h-4 w-4 text-slate-400" />
                             <span className="text-slate-700 dark:text-slate-300">
-                                {booking.client.full_name || 'Sin nombre'}
+                                {booking.client_name || 'Sin nombre'}
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
                             <Mail className="h-4 w-4 text-slate-400" />
                             <span className="text-slate-700 dark:text-slate-300">
-                                {booking.client.email || 'Sin email'}
+                                {booking.client_email || 'Sin email'}
                             </span>
                         </div>
                         <div className="flex items-center gap-3">
                             <Phone className="h-4 w-4 text-slate-400" />
                             <span className="text-slate-700 dark:text-slate-300">
-                                {booking.client.phone || 'Sin teléfono'}
+                                {booking.client_phone || 'Sin teléfono'}
                             </span>
                         </div>
                     </div>
@@ -250,15 +187,15 @@ export default function ResortBookingDetailPage() {
                         </h2>
                     </div>
                     <div className="space-y-3">
-                        {booking.agent ? (
+                        {booking.agent_name ? (
                             <>
                                 <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800">
                                     <p className="text-xs text-indigo-600 mb-1 font-medium">REALIZADA POR AGENTE</p>
                                     <div className="font-medium text-slate-900 dark:text-slate-100">
-                                        {booking.agent.full_name}
+                                        {booking.agent_name}
                                     </div>
                                     <div className="text-sm text-slate-500">
-                                        {booking.agent.email}
+                                        {booking.agent_email}
                                     </div>
                                 </div>
                             </>

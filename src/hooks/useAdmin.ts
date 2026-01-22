@@ -94,6 +94,38 @@ interface CreatePartnerCodeData {
     description?: string;
 }
 
+export interface BookingDetail {
+    id: string;
+    adults: number;
+    children: number;
+    total_cents: number;
+    resort_net_cents: number;
+    agent_commission_cents: number;
+    agent_payment_type: string;
+    amount_paid_to_agent_cents: number;
+    amount_paid_to_resort_cents: number;
+    currency: string;
+    status: string;
+    booking_source: string;
+    created_at: string;
+    experience_title: string;
+    experience_description?: string;
+    experience_category?: string;
+    experience_image?: string;
+    resort_id: string;
+    resort_name: string;
+    resort_city?: string;
+    resort_phone?: string;
+    slot_start_time: string;
+    slot_end_time: string;
+    slot_capacity?: number;
+    client_name: string;
+    client_email: string;
+    client_phone: string;
+    agent_name?: string;
+    agent_email?: string;
+}
+
 // Query Keys
 export const adminQueryKeys = {
     all: ['admin'] as const,
@@ -103,6 +135,7 @@ export const adminQueryKeys = {
     resortDetail: (id: string) => [...adminQueryKeys.resorts(), 'detail', id] as const,
     bookings: () => [...adminQueryKeys.all, 'bookings'] as const,
     bookingsList: (params: QueryParams) => [...adminQueryKeys.bookings(), 'list', params] as const,
+    bookingDetail: (id: string) => [...adminQueryKeys.bookings(), 'detail', id] as const,
     experiences: () => [...adminQueryKeys.all, 'experiences'] as const,
     experiencesList: (params: QueryParams) => [...adminQueryKeys.experiences(), 'list', params] as const,
     agents: () => [...adminQueryKeys.all, 'agents'] as const,
@@ -184,6 +217,11 @@ async function fetchPartnerById(id: string): Promise<PartnerDetail> {
     return response.data;
 }
 
+async function fetchBookingById(id: string): Promise<BookingDetail> {
+    const response = await apiClient.get<BookingDetail>(`/api/v1/admin/bookings/${id}`);
+    return response.data;
+}
+
 async function fetchResortById(id: string): Promise<ResortProfile> {
     const response = await apiClient.get<ResortProfile>(`/api/v1/admin/resorts/${id}`);
     return response.data;
@@ -245,6 +283,19 @@ export function useAdminBookings(params: QueryParams = {}) {
         queryFn: () => fetchAdminBookings(params),
         staleTime: 2 * 60 * 1000,
         gcTime: 5 * 60 * 1000,
+    });
+}
+
+/**
+ * Hook for single booking detail - cached for 5 minutes
+ */
+export function useAdminBookingDetail(id: string) {
+    return useQuery({
+        queryKey: adminQueryKeys.bookingDetail(id),
+        queryFn: () => fetchBookingById(id),
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+        enabled: !!id,
     });
 }
 

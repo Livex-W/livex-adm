@@ -44,41 +44,12 @@ export default function NewAgentPage() {
                         Gestión de Agentes
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        Registra o vincula vendedores para tus experiencias.
+                        Registra vendedores para tus experiencias.
                     </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                <button
-                    onClick={() => setActiveTab('create')}
-                    className={`
-                        flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all
-                        ${activeTab === 'create'
-                            ? 'bg-white dark:bg-slate-900 text-primary shadow-sm'
-                            : 'cursor-pointer text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}
-                    `}
-                >
-                    <UserPlus className="h-4 w-4" />
-                    Crear Nuevo
-                </button>
-                <button
-                    onClick={() => setActiveTab('link')}
-                    className={`
-                        flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-md transition-all
-                        ${activeTab === 'link'
-                            ? 'bg-white dark:bg-slate-900 text-primary shadow-sm'
-                            : 'cursor-pointer text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}
-                    `}
-                >
-                    <LinkIcon className="h-4 w-4" />
-                    Vincular Existente
-                </button>
-            </div>
-
-            <div className="min-h-[400px]">
-                {activeTab === 'create' ? <NewAgentForm /> : <AgentLinkTable />}
-            </div>
+           <NewAgentForm />
         </div>
     );
 }
