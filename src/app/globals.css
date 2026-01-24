@@ -4,12 +4,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Base Palette - Indigo */
-  --color-indigo-50: #EEF2FF;
-  --color-indigo-100: #E0E7FF;
-  --color-indigo-600: #4F46E5;
-  --color-indigo-700: #4338CA;
-  --color-indigo-900: #312E81;
+  /* Base Palette - Purple (Replacing Indigo) */
+  --color-indigo-50: #f9f0ff;
+  --color-indigo-100: #f3e0ff;
+  --color-indigo-500: #cb5cfc;
+  --color-indigo-600: #a404f4;
+  --color-indigo-700: #8404bc;
+  --color-indigo-900: #55027a;
 
   /* Base Palette - Grey */
   --color-grey-50: #F9FAFB;

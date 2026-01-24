@@ -1,7 +1,19 @@
 import { z } from 'zod';
 
 // Experience category enum matching backend
-export const experienceCategoryEnum = z.enum(['islands', 'nautical', 'city_tour']);
+export const experienceCategoryEnum = z.enum([
+    'islands',
+    'nautical',
+    'city_tour',
+    'sun_beach',
+    'cultural',
+    'adventure',
+    'ecotourism',
+    'agrotourism',
+    'gastronomic',
+    'religious',
+    'educational'
+]);
 export type ExperienceCategory = z.infer<typeof experienceCategoryEnum>;
 
 // Time slot configuration for availability
