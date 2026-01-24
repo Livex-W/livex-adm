@@ -18,6 +18,7 @@ import { formatCurrency } from '@/lib/utils';
 import { useExperience, useDeleteExperience } from '@/hooks/useExperience';
 import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/routes';
+import { getCategoryName } from '@/lib/categories';
 
 export default function ExperienceDetailPage() {
     const router = useRouter();
@@ -85,7 +86,7 @@ export default function ExperienceDetailPage() {
                             {experience.title}
                         </h1>
                         <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="capitalize">{experience.category}</Badge>
+                            <Badge variant="outline" className="capitalize">{getCategoryName(experience.category)}</Badge>
                             <StatusBadge status={experience.status || 'draft'} />
                         </div>
                     </div>
