@@ -18,6 +18,7 @@ interface ExperienceImage {
 // Types - matches API response from /api/v1/experiences/management
 interface ExperienceListItem {
     id: string;
+    code?: string;
     resort_id: string;
     title: string;
     slug: string;
