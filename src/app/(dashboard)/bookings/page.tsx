@@ -215,7 +215,7 @@ export default function BookingsPage() {
                                                                 {booking.experience_title || booking.experience?.title || 'Experiencia'}
                                                             </div>
                                                             <div className="text-xs text-slate-500">
-                                                                ID: {booking.id.slice(0, 8)}...
+                                                                código: {booking.code || booking.id.slice(0, 8)}
                                                             </div>
                                                         </div>
                                                     </div>

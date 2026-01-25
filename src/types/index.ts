@@ -203,6 +203,7 @@ export interface ExperienceImage {
 
 export interface Experience {
     id: string;
+    code?: string;
     resort_id: string;
     title: string;
     slug: string;
@@ -332,6 +333,7 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' 
 
 export interface Booking {
     id: string;
+    code?: string;
     user_id: string;
     experience_id: string;
     slot_id: string;

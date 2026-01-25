@@ -105,7 +105,7 @@ export default function ExperiencesPage() {
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <Input
-                                    placeholder="Buscar experiencia..."
+                                    placeholder="Buscar por código o título..."
                                     value={searchInput}
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     className="pl-10"
@@ -196,7 +196,7 @@ export default function ExperiencesPage() {
                                                         <div className="font-medium text-slate-900 dark:text-slate-100 mb-0.5 line-clamp-1">
                                                             {exp.title}
                                                         </div>
-                                                        <div className="text-xs text-slate-500 font-mono">ID: {exp.id.slice(0, 8)}...</div>
+                                                        <div className="text-xs text-slate-500 font-mono">código: {exp.code || exp.id.slice(0, 8)}</div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge variant="outline" className="capitalize">{getCategoryName(exp.category)}</Badge>

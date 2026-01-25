@@ -92,13 +92,13 @@ export default function ExperienceDetailPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <Button
+                    {/* <Button
                         variant="outline"
                         leftIcon={<Edit className="h-4 w-4" />}
                         onClick={() => router.push(`${ROUTES.DASHBOARD.EXPERIENCES.LIST}/${experienceId}/edit`)}
                     >
                         Editar
-                    </Button>
+                    </Button> */}
                     <Button
                         variant="danger"
                         leftIcon={<Trash2 className="h-4 w-4" />}
@@ -283,8 +283,8 @@ export default function ExperienceDetailPage() {
                         </h2>
                         <div className="space-y-2 text-sm text-slate-500">
                             <div>
-                                <span className="font-medium">ID:</span>{' '}
-                                <span className="font-mono">{experience.id}</span>
+                                <span className="font-medium">Código:</span>{' '}
+                                <span className="font-mono">{experience.code || experience.id}</span>
                             </div>
                             <div>
                                 <span className="font-medium">Slug:</span>{' '}

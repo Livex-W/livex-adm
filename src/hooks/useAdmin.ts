@@ -96,6 +96,7 @@ interface CreatePartnerCodeData {
 
 export interface BookingDetail {
     id: string;
+    code?: string;
     adults: number;
     children: number;
     total_cents: number;

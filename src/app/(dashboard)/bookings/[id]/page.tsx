@@ -126,7 +126,7 @@ export default function ResortBookingDetailPage() {
                                     {booking.experience_title}
                                 </h1>
                                 <p className="text-sm text-slate-500 mt-1">
-                                    ID: {booking.id}
+                                    Código: {booking.code || booking.id}
                                 </p>
                             </div>
                             <StatusBadge status={statusConfig[booking.status]?.variant || booking.status} />
