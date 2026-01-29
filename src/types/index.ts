@@ -395,8 +395,6 @@ export interface CreateReviewResponseDto {
 export interface Agent {
     resort_id: string;
     user_id: string;
-    commission_bps: number;
-    commission_fixed_cents: number;
     email: string;
     full_name: string;
     created_at: string;
@@ -412,8 +410,6 @@ export interface CreateAgentDto {
     documentNumber: string;
     nit?: string;
     rnt?: string;
-    commissionBps?: number;
-    commissionFixedCents?: number;
     resortId?: string;
 }
 

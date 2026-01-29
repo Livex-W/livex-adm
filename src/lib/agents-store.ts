@@ -8,8 +8,7 @@ interface AgentsState {
     error: string | null;
     fetchAgents: (resortId: string) => Promise<void>;
     createAgent: (dto: CreateAgentDto) => Promise<Agent>;
-    createAgreement: (resortId: string, userId: string, commissionBps: number, commissionFixedCents?: number) => Promise<Agent>;
-    updateCommission: (resortId: string, userId: string, commissionBps: number) => Promise<void>;
+    createAgreement: (resortId: string, userId: string) => Promise<Agent>;
     searchUnassignedAgents: (resortId: string, search: string, page?: number, limit?: number) => Promise<PaginatedResult<{ id: string, email: string, full_name: string, avatar?: string }>>;
     clearAgents: () => void;
 }
@@ -35,11 +34,9 @@ export const useAgentsStore = create<AgentsState>()((set) => ({
         return response.data;
     },
 
-    createAgreement: async (resortId: string, userId: string, commissionBps: number, commissionFixedCents?: number) => {
+    createAgreement: async (resortId: string, userId: string) => {
         const response = await apiClient.post<Agent>(`/api/v1/agents/resorts/${resortId}`, {
             userId,
-            commissionBps,
-            commissionFixedCents
         });
         return response.data;
     },
@@ -52,17 +49,6 @@ export const useAgentsStore = create<AgentsState>()((set) => ({
         return response.data;
     },
 
-    updateCommission: async (resortId: string, userId: string, commissionBps: number) => {
-        await apiClient.patch(`/api/v1/agents/resorts/${resortId}/users/${userId}`, {
-            commissionBps,
-        });
-        // Update local state
-        set((state) => ({
-            agents: state.agents.map((agent) =>
-                agent.user_id === userId ? { ...agent, commission_bps: commissionBps } : agent
-            ),
-        }));
-    },
-
     clearAgents: () => set({ agents: [], error: null }),
 }));
+
