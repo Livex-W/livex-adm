@@ -63,8 +63,6 @@ export default function NewAgentForm() {
 
     const onSubmit = async (data: CreateAgentFormData) => {
         try {
-            const commissionFixedCents = Math.round(parseFloat(data.commissionAmount) * 100);
-
             await createAgent({
                 fullName: data.fullName,
                 email: data.email,
@@ -74,7 +72,6 @@ export default function NewAgentForm() {
                 documentNumber: data.documentNumber,
                 nit: data.nit || undefined,
                 rnt: data.rnt || undefined,
-                commissionFixedCents,
             });
 
             toast.success('Agente creado exitosamente');

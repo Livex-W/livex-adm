@@ -69,7 +69,7 @@ export default function AgentLinkTable() {
     };
 
     const searchResults = data?.data || [];
-    const pagination = data ? data.meta : { total: 0, total_pages: 0, page: 1, limit: 5 };
+    const pagination = data ? data.meta : { total: 0, totalPages: 0, page: 1, limit: 5 };
 
     return (
         <div className="space-y-4">
@@ -171,7 +171,7 @@ export default function AgentLinkTable() {
                         <Button
                             variant="outline"
                             size="sm"
-                            disabled={pagination.page >= pagination.total_pages || isLoading}
+                            disabled={pagination.page >= pagination.totalPages || isLoading}
                             onClick={() => setPage((p) => p + 1)}
                         >
                             Siguiente
