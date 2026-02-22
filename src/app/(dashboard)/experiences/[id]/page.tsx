@@ -13,9 +13,9 @@ import {
     ModalFooter,
     Spinner,
 } from '@/components/ui';
-import { ArrowLeft, Edit, Trash2, ImageIcon, Clock, Users, DollarSign } from 'lucide-react';
+import { ArrowLeft, Trash2, ImageIcon, Clock, Users, DollarSign, CheckCircle } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { useExperience, useDeleteExperience } from '@/hooks/useExperience';
+import { useExperience, useDeleteExperience, useActivateExperience } from '@/hooks/useExperience';
 import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/routes';
 import { getCategoryName } from '@/lib/categories';
@@ -30,6 +30,7 @@ export default function ExperienceDetailPage() {
 
     const { data: experience, isLoading, isError } = useExperience(experienceId);
     const deleteExperience = useDeleteExperience();
+    const activateExperience = useActivateExperience();
 
     const mainImage = useMemo(() => {
         return experience?.images?.find(image => image.image_type === 'hero' || image.sort_order === 0);
@@ -38,11 +39,22 @@ export default function ExperienceDetailPage() {
     const handleDelete = async () => {
         try {
             await deleteExperience.mutateAsync(experienceId);
-            // Invalidate cache and redirect
+            setShowDeleteModal(false);
+            // Invalidate cache and stay on page to see status change
+            await queryClient.invalidateQueries({ queryKey: ['experience', experienceId] });
             await queryClient.invalidateQueries({ queryKey: ['my-experiences'] });
-            router.push(ROUTES.DASHBOARD.EXPERIENCES.LIST);
         } catch (error) {
             console.error('Error deleting experience:', error);
+        }
+    };
+
+    const handleActivate = async () => {
+        try {
+            await activateExperience.mutateAsync(experienceId);
+            await queryClient.invalidateQueries({ queryKey: ['experience', experienceId] });
+            await queryClient.invalidateQueries({ queryKey: ['my-experiences'] });
+        } catch (error) {
+            console.error('Error activating experience:', error);
         }
     };
 
@@ -87,25 +99,29 @@ export default function ExperienceDetailPage() {
                         </h1>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="capitalize">{getCategoryName(experience.category)}</Badge>
-                            <StatusBadge status={experience.status || 'draft'} />
+                            <StatusBadge status={!experience.is_active ? 'inactive' : experience.status || 'draft'} />
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {/* <Button
-                        variant="outline"
-                        leftIcon={<Edit className="h-4 w-4" />}
-                        onClick={() => router.push(`${ROUTES.DASHBOARD.EXPERIENCES.LIST}/${experienceId}/edit`)}
-                    >
-                        Editar
-                    </Button> */}
-                    <Button
-                        variant="danger"
-                        leftIcon={<Trash2 className="h-4 w-4" />}
-                        onClick={() => setShowDeleteModal(true)}
-                    >
-                        Eliminar
-                    </Button>
+                    {!experience.is_active ? (
+                        <Button
+                            variant="primary"
+                            leftIcon={<CheckCircle className="h-4 w-4" />}
+                            onClick={handleActivate}
+                            isLoading={activateExperience.isPending}
+                        >
+                            Activar
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="danger"
+                            leftIcon={<Trash2 className="h-4 w-4" />}
+                            onClick={() => setShowDeleteModal(true)}
+                        >
+                            Eliminar
+                        </Button>
+                    )}
                 </div>
             </div>
 

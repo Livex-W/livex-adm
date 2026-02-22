@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/api-client';
-import { ResortProfile, Experience, Booking, PaginatedResult } from '@/types';
+import { ResortProfile, Booking, PaginatedResult } from '@/types';
+import { ExperienceListItem } from './useExperience';
 
 // Types
 interface AdminStats {
@@ -179,13 +180,13 @@ async function fetchAdminBookings(params: QueryParams): Promise<PaginatedResult<
     return response.data;
 }
 
-async function fetchAdminExperiences(params: QueryParams): Promise<PaginatedResult<Experience>> {
+async function fetchAdminExperiences(params: QueryParams): Promise<PaginatedResult<ExperienceListItem>> {
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.search) queryParams.append('search', params.search);
 
-    const response = await apiClient.get<PaginatedResult<Experience>>(
+    const response = await apiClient.get<PaginatedResult<ExperienceListItem>>(
         `/api/v1/experiences/management?${queryParams.toString()}`
     );
     return response.data;

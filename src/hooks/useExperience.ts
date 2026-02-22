@@ -50,6 +50,7 @@ interface ExperienceListItem {
     duration_minutes?: number;
     max_capacity?: number;
     images?: ExperienceImage[];
+    is_active?: boolean;
 }
 
 interface PaginatedResponse<T> {
@@ -328,6 +329,11 @@ async function deleteExperience(id: string): Promise<void> {
     await apiClient.delete(`/api/v1/experiences/${id}`);
 }
 
+// Activate experience
+async function activateExperience(id: string): Promise<void> {
+    await apiClient.patch(`/api/v1/experiences/${id}/activate`);
+}
+
 // Hook for fetching single experience
 export function useExperience(id: string) {
     return useQuery({
@@ -343,10 +349,26 @@ export function useDeleteExperience() {
 
     return useMutation({
         mutationFn: (id: string) => deleteExperience(id),
-        onSuccess: () => {
+        onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: ['experiences'] });
             queryClient.invalidateQueries({ queryKey: ['my-experiences'] });
             queryClient.invalidateQueries({ queryKey: ['admin', 'experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['experience', id] });
+        },
+    });
+}
+
+// Hook for activating experience
+export function useActivateExperience() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => activateExperience(id),
+        onSuccess: (_, id) => {
+            queryClient.invalidateQueries({ queryKey: ['experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['my-experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'experiences'] });
+            queryClient.invalidateQueries({ queryKey: ['experience', id] });
         },
     });
 }
