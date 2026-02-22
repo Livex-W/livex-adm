@@ -11,8 +11,6 @@ interface UpdateResortGeneralData {
     name?: string;
     description?: string;
     website?: string;
-    contact_email?: string;
-    contact_phone?: string;
     nit?: string;
     rnt?: string;
 }

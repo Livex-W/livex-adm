@@ -22,10 +22,11 @@ interface QueryParams {
     search?: string;
 }
 
-interface Agent {
+export interface AdminAgent {
     id: string;
     email: string;
     full_name: string;
+    is_active?: boolean;
     avatar?: string;
     phone?: string;
     document_type?: string;
@@ -40,6 +41,7 @@ interface Partner {
     id: string;
     email: string;
     full_name: string;
+    is_active?: boolean;
     phone: string | null;
     created_at: string;
     codes_count: number;
@@ -189,13 +191,13 @@ async function fetchAdminExperiences(params: QueryParams): Promise<PaginatedResu
     return response.data;
 }
 
-async function fetchAdminAgents(params: QueryParams): Promise<PaginatedResult<Agent>> {
+async function fetchAdminAgents(params: QueryParams): Promise<PaginatedResult<AdminAgent>> {
     const queryParams = new URLSearchParams();
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.limit) queryParams.append('limit', params.limit.toString());
     if (params.search) queryParams.append('search', params.search);
 
-    const response = await apiClient.get<PaginatedResult<Agent>>(
+    const response = await apiClient.get<PaginatedResult<AdminAgent>>(
         `/api/v1/admin/agents?${queryParams.toString()}`
     );
     return response.data;
@@ -247,6 +249,10 @@ async function createPartnerCode(partnerId: string, data: CreatePartnerCodeData)
         data
     );
     return response.data;
+}
+
+async function deactivateUser(id: string): Promise<void> {
+    await apiClient.delete(`/api/v1/admin/users/${id}`);
 }
 
 // Hooks
@@ -417,6 +423,22 @@ export function useCreatePartnerCode(partnerId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.partnerDetail(partnerId) });
             queryClient.invalidateQueries({ queryKey: adminQueryKeys.partners() });
+        },
+    });
+}
+
+/**
+ * Hook for deactivating a user (agent, partner, etc.)
+ */
+export function useDeactivateUser() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => deactivateUser(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.agents() });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.partners() });
+            queryClient.invalidateQueries({ queryKey: adminQueryKeys.resorts() });
         },
     });
 }

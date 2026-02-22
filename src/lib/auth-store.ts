@@ -1,11 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, LoginDto, RegisterDto, AuthResponse } from '@/types';
+import { User, LoginDto, RegisterDto, AuthResponse, ALLOWED_ROLES } from '@/types';
 import apiClient from './api-client';
 import { tokenService } from './token-service';
 import { ROUTES, BASE_PATH } from '@/routes';
-import { useResortStore } from './resort-store';
-import { useAgentProfileStore } from './agent-profile-store';
 import { STORAGE_KEYS, API_ENDPOINTS } from './constants';
 import { security } from '@/utils/security';
 
@@ -36,17 +34,13 @@ export const useAuthStore = create<AuthState>()(
                     );
                     const { tokens, user } = response.data;
 
+                    if (!ALLOWED_ROLES.includes(user.role)) {
+                        throw new Error('No tiene permisos para acceder.');
+                    }
+
                     // Save both tokens securely
                     tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
                     set({ user, isLoading: false });
-
-                    // Load profile data in background (non-blocking)
-                    if (user.role === 'agent') {
-                        useAgentProfileStore.getState().fetchAgentProfile();
-                        useAgentProfileStore.getState().fetchAgentStats();
-                    } else if (user.role === 'resort') {
-                        useResortStore.getState().fetchMyResort();
-                    }
 
                     return user;
                 } catch (error) {
@@ -76,10 +70,7 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: () => {
-                // Clear tokens from secure storage
                 tokenService.clearTokens();
-                useResortStore.getState().clearResort();
-                useAgentProfileStore.getState().clearAgent();
                 set({ user: null, isLoading: false });
                 window.location.href = `${BASE_PATH}${ROUTES.AUTH.LOGIN}`;
             },

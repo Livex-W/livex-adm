@@ -15,7 +15,8 @@ import {
     CheckCircle,
     XCircle,
     Loader2,
-    ExternalLink
+    ExternalLink,
+    Clock
 } from 'lucide-react';
 import Link from 'next/link';
 import { ROUTES } from '@/routes';
@@ -187,29 +188,45 @@ export default function ResortDetailPage() {
                 </div>
 
                 {/* Action Buttons */}
-                {resort.status === 'under_review' && (
-                    <div className="flex gap-2 ml-10 sm:ml-0">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowRejectModal(true)}
-                            disabled={actionLoading}
-                            className="text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                            <XCircle className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Rechazar</span>
-                        </Button>
-                        <Button
-                            size="sm"
-                            onClick={handleApprove}
-                            disabled={actionLoading}
-                            isLoading={actionLoading}
-                        >
-                            <CheckCircle className="h-4 w-4 sm:mr-2" />
-                            <span className="hidden sm:inline">Aprobar</span>
-                        </Button>
-                    </div>
-                )}
+                {resort.status === 'under_review' && (() => {
+                    const docs = resort.documents || [];
+                    const hasDocs = docs.length > 0;
+                    const allDocsApproved = hasDocs && docs.every(d => d.status === 'approved');
+                    const pendingDocs = docs.filter(d => d.status !== 'approved' && d.status !== 'rejected');
+                    const hasPendingDocs = pendingDocs.length > 0;
+
+                    return (
+                        <div className="flex items-center gap-3 ml-10 sm:ml-0">
+                            {hasPendingDocs && (
+                                <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-700 hidden sm:flex items-center gap-1.5">
+                                    <Clock className="h-3 w-3" />
+                                    {pendingDocs.length} doc{pendingDocs.length > 1 ? 's' : ''} por revisar
+                                </span>
+                            )}
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowRejectModal(true)}
+                                disabled={actionLoading}
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                title="Rechazar resort"
+                            >
+                                <XCircle className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Rechazar</span>
+                            </Button>
+                            <Button
+                                size="sm"
+                                onClick={handleApprove}
+                                disabled={actionLoading || !allDocsApproved}
+                                isLoading={actionLoading}
+                                title={!allDocsApproved ? 'Aprueba todos los documentos primero' : 'Aprobar resort'}
+                            >
+                                <CheckCircle className="h-4 w-4 sm:mr-2" />
+                                <span className="hidden sm:inline">Aprobar</span>
+                            </Button>
+                        </div>
+                    );
+                })()}
             </div>
 
             {/* Error Message */}
@@ -247,13 +264,13 @@ export default function ResortDetailPage() {
                             <div className="flex items-center gap-3">
                                 <Mail className="h-4 w-4 text-slate-400" />
                                 <span className="text-slate-600 dark:text-slate-300">
-                                    {resort.contact_email || 'Sin email'}
+                                    {resort.owner_email || 'Sin email'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone className="h-4 w-4 text-slate-400" />
                                 <span className="text-slate-600 dark:text-slate-300">
-                                    {resort.contact_phone || 'Sin teléfono'}
+                                    {resort.owner_phone || 'Sin teléfono'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">

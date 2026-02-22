@@ -23,8 +23,6 @@ type ResortDocType = typeof DOC_TYPES[number]['type'];
 const generalSchema = z.object({
     name: z.string().min(3, 'El nombre es obligatorio'),
     description: z.string().optional(),
-    contact_email: z.email().optional().or(z.literal('')),
-    contact_phone: z.string().optional().or(z.literal('')),
     website: z.url().optional().or(z.literal('')),
     nit: z.string().regex(/^\d{9}-\d$/, 'Formato: 800098813-6').optional().or(z.literal('')),
     rnt: z.string().regex(/^\d{5}$/, 'Debe tener 5 dígitos').optional().or(z.literal('')),
@@ -110,8 +108,6 @@ export default function SettingsPage() {
         defaultValues: {
             name: resort?.name || '',
             description: resort?.description || '',
-            contact_email: resort?.contact_email || '',
-            contact_phone: resort?.contact_phone || '',
             website: resort?.website || '',
             nit: resort?.nit || '',
             rnt: resort?.rnt || '',
@@ -134,8 +130,6 @@ export default function SettingsPage() {
             generalForm.reset({
                 name: resort.name || '',
                 description: resort.description || '',
-                contact_email: resort.contact_email || '',
-                contact_phone: resort.contact_phone || '',
                 website: resort.website || '',
                 nit: resort.nit || '',
                 rnt: resort.rnt || '',
@@ -292,12 +286,6 @@ export default function SettingsPage() {
                                         <Input label="Nombre del Resort" {...generalForm.register('name')} error={generalForm.formState.errors.name?.message} />
                                         <Input label="Sitio Web" placeholder="https://" {...generalForm.register('website')} error={generalForm.formState.errors.website?.message} />
                                     </div>
-
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        <Input label="Email de Contacto" type="email" {...generalForm.register('contact_email')} error={generalForm.formState.errors.contact_email?.message} />
-                                        <Input label="Teléfono" {...generalForm.register('contact_phone')} error={generalForm.formState.errors.contact_phone?.message} />
-                                    </div>
-
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         <Input label="NIT" placeholder="800098813-6" {...generalForm.register('nit')} error={generalForm.formState.errors.nit?.message} helperText="Formato: 9 dígitos, guión, 1 dígito" />
                                         <Input label="RNT" placeholder="23412" {...generalForm.register('rnt')} error={generalForm.formState.errors.rnt?.message} helperText="5 dígitos" />

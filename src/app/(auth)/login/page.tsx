@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { Button, Input, PasswordInput } from '@/components/ui';
 import { AlertCircle, ShieldCheck } from 'lucide-react';
 import { AuthError, getErrorMessage } from '@/types/errors';
+import { getRedirectPathByRole } from '@/utils/role-redirect';
 
 const loginSchema = z.object({
     email: z.email('Email inválido'),
@@ -22,9 +23,9 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
     const router = useRouter();
-    const { login, logout } = useAuthStore();
+    const { login } = useAuthStore();
     const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
 
     const {
         register,
@@ -35,26 +36,13 @@ export default function LoginPage() {
     });
 
     const onSubmit = async (data: LoginForm) => {
-        setIsLoading(true);
         setError(null);
         try {
             const user = await login(data);
-
-            // Allow admin and partner roles
-            if (user.role === 'admin') {
-                router.push(ROUTES.DASHBOARD.HOME);
-            } else if (user.role === 'partner') {
-                router.push(ROUTES.PARTNER.HOME);
-            } else {
-                logout();
-                setError('Acceso denegado. Solo administradores y partners pueden acceder a este panel.');
-                return;
-            }
+            router.push(getRedirectPathByRole(user.role));
         } catch (err) {
             const authError = err as AuthError;
             setError(getErrorMessage(authError));
-        } finally {
-            setIsLoading(false);
         }
     };
 

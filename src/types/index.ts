@@ -1,11 +1,17 @@
-// API Types aligned with NestJS backend
+export const USER_ROLES = {
+    ADMIN: 'admin',
+    PARTNER: 'partner',
+} as const;
 
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+export const ALLOWED_ROLES: UserRole[] = [USER_ROLES.ADMIN, USER_ROLES.PARTNER];
 // ==================== User & Auth ====================
 export interface User {
     id: string;
     email: string;
     fullName: string;
-    role: 'user' | 'resort' | 'agent' | 'admin' | 'partner';
+    role: UserRole;
     avatar?: string; // changed from avatar_url to match backend DTO likely or null
     phone?: string;
     isVip?: boolean;
@@ -83,7 +89,6 @@ export interface ResortAgent {
     resort_id?: string;
     user_id: string;
     commission_bps: number;
-    is_active: boolean;
     agent_email?: string;
     agent_name?: string;
     created_at: string;
@@ -96,8 +101,6 @@ export interface ResortProfile {
     name: string;
     description?: string;
     website?: string;
-    contact_email?: string;
-    contact_phone?: string;
     address_line?: string;
     city?: string;
     country?: string;
@@ -106,7 +109,9 @@ export interface ResortProfile {
     nit?: string;
     rnt?: string;
     owner_user_id: string;
-    is_active: boolean;
+    owner_email?: string;
+    owner_phone?: string;
+    owner_is_active?: boolean;
     status: ResortStatus;
     approved_by?: string;
     approved_at?: string;

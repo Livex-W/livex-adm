@@ -16,15 +16,18 @@ import {
     TableCell,
     Badge
 } from '@/components/ui';
-import { Search, Loader2, ChevronLeft, ChevronRight, Plus, UserPlus } from 'lucide-react';
+import { Modal, ModalFooter } from '@/components/ui/modal';
+import { toast } from 'sonner';
+import { Search, Loader2, ChevronLeft, ChevronRight, Plus, UserPlus, UserX } from 'lucide-react';
 import { ROUTES } from '@/routes';
-import { useAdminPartners } from '@/hooks/useAdmin';
+import { useAdminPartners, useDeactivateUser } from '@/hooks/useAdmin';
 import { useDebounce } from '@/hooks/useDebounce';
 
 export default function PartnersPage() {
     const router = useRouter();
     const [searchInput, setSearchInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [userToDeactivate, setUserToDeactivate] = useState<{ id: string, name: string } | null>(null);
 
     const debouncedSearch = useDebounce(searchInput, 400);
 
@@ -39,8 +42,31 @@ export default function PartnersPage() {
 
     // Reset to page 1 when search changes
     useEffect(() => {
-        setCurrentPage(1);
+        setCurrentPage((prev) => (prev !== 1 ? 1 : prev));
     }, [debouncedSearch]);
+
+    const deactivateUser = useDeactivateUser();
+
+    const handleDeactivate = (e: React.MouseEvent, partnerId: string, name: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setUserToDeactivate({ id: partnerId, name });
+    };
+
+    const confirmDeactivate = () => {
+        if (!userToDeactivate) return;
+
+        deactivateUser.mutate(userToDeactivate.id, {
+            onSuccess: () => {
+                toast.success(`Partner ${userToDeactivate.name} desactivado exitosamente.`);
+                setUserToDeactivate(null);
+            },
+            onError: () => {
+                toast.error(`Hubo un error al desactivar al partner ${userToDeactivate.name}.`);
+                setUserToDeactivate(null);
+            },
+        });
+    };
 
     const formatCurrency = (cents: number) => {
         return new Intl.NumberFormat('es-CO', {
@@ -120,12 +146,31 @@ export default function PartnersPage() {
                                             <span className="font-semibold text-slate-900 dark:text-slate-100">
                                                 {partner.full_name}
                                             </span>
-                                            <Badge variant="info">{partner.codes_count} códigos</Badge>
+                                            <div className="flex gap-2 items-center">
+                                                <Badge variant="info">{partner.codes_count} códigos</Badge>
+                                                {partner.is_active === false && (
+                                                    <Badge variant="danger">Inactivo</Badge>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="text-sm text-slate-500 space-y-1">
-                                            <p>{partner.email}</p>
-                                            <p className="font-medium">{formatCurrency(partner.total_revenue_cents)}</p>
-                                            <p className="text-xs">{formatDate(partner.created_at)}</p>
+                                        <div className="text-sm text-slate-500 flex justify-between items-center">
+                                            <div className="space-y-1">
+                                                <p>{partner.email}</p>
+                                                <p className="font-medium">{formatCurrency(partner.total_revenue_cents)}</p>
+                                                <p className="text-xs">{formatDate(partner.created_at)}</p>
+                                            </div>
+                                            {partner.is_active !== false && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(e: React.MouseEvent) => handleDeactivate(e, partner.id, partner.full_name || 'Sin nombre')}
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-auto px-2"
+                                                    title="Desactivar partner"
+                                                    disabled={deactivateUser.isPending}
+                                                >
+                                                    <UserX className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </Link>
                                 ))}
@@ -142,6 +187,8 @@ export default function PartnersPage() {
                                             <TableHead>Códigos</TableHead>
                                             <TableHead>Ingresos</TableHead>
                                             <TableHead>Registrado</TableHead>
+                                            <TableHead>Estado</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -170,6 +217,27 @@ export default function PartnersPage() {
                                                 </TableCell>
                                                 <TableCell className="text-slate-500">
                                                     {formatDate(partner.created_at)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {partner.is_active === false ? (
+                                                        <Badge variant="danger">Inactivo</Badge>
+                                                    ) : (
+                                                        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0">Activo</Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {partner.is_active !== false && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={(e: React.MouseEvent) => handleDeactivate(e, partner.id, partner.full_name || 'Sin nombre')}
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2"
+                                                            title="Desactivar partner"
+                                                            disabled={deactivateUser.isPending}
+                                                        >
+                                                            <UserX className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -211,6 +279,27 @@ export default function PartnersPage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Deactivation Modal */}
+            <Modal
+                isOpen={!!userToDeactivate}
+                onClose={() => setUserToDeactivate(null)}
+                title="Desactivar Partner"
+                description={`¿Estás seguro que deseas desactivar al partner ${userToDeactivate?.name}?`}
+            >
+                <p className="text-slate-600 dark:text-slate-400">
+                    Al desactivar a este partner, este usuario no podrá acceder a la plataforma. Podrás volver a habilitarlo en cualquier momento.
+                </p>
+                <ModalFooter>
+                    <Button variant="outline" onClick={() => setUserToDeactivate(null)} disabled={deactivateUser.isPending}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={confirmDeactivate} disabled={deactivateUser.isPending}>
+                        {deactivateUser.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserX className="w-4 h-4 mr-2" />}
+                        Desactivar
+                    </Button>
+                </ModalFooter>
+            </Modal>
         </div>
     );
 }

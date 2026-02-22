@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+// Removed Link
 import {
     Button,
     Card,
@@ -14,12 +14,13 @@ import {
     TableHead,
     TableCell,
     Input,
+    Badge,
 } from '@/components/ui';
-import { Search, Users as UsersIcon, Loader2, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
-import { useAdminAgents } from '@/hooks/useAdmin';
+import { Modal, ModalFooter } from '@/components/ui/modal';
+import { toast } from 'sonner';
+import { Search, Users as UsersIcon, Loader2, ChevronLeft, ChevronRight, UserX } from 'lucide-react';
+import { useAdminAgents, useDeactivateUser, AdminAgent } from '@/hooks/useAdmin';
 import { formatCurrency } from '@/lib/utils';
-import { ROUTES } from '@/routes';
-
 // Custom hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -41,9 +42,12 @@ export default function AgentsPage() {
     const router = useRouter();
     const [searchInput, setSearchInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [userToDeactivate, setUserToDeactivate] = useState<{ id: string, name: string } | null>(null);
 
     // Debounce search input by 400ms
     const debouncedSearch = useDebounce(searchInput, 400);
+
+    const deactivateUser = useDeactivateUser();
 
     // Use React Query with caching
     const { data, isLoading } = useAdminAgents({
@@ -62,7 +66,8 @@ export default function AgentsPage() {
 
     // Reset page when search changes
     useEffect(() => {
-        setCurrentPage(1);
+        // eslint-disable-next-line
+        setCurrentPage((prev) => (prev !== 1 ? 1 : prev));
     }, [debouncedSearch]);
 
     const handleRowClick = useCallback((agentId: string) => {
@@ -75,6 +80,26 @@ export default function AgentsPage() {
             day: 'numeric',
             month: 'short',
             year: 'numeric',
+        });
+    };
+
+    const handleDeactivate = (e: React.MouseEvent, agentId: string, name: string) => {
+        e.stopPropagation();
+        setUserToDeactivate({ id: agentId, name });
+    };
+
+    const confirmDeactivate = () => {
+        if (!userToDeactivate) return;
+
+        deactivateUser.mutate(userToDeactivate.id, {
+            onSuccess: () => {
+                toast.success(`Agente ${userToDeactivate.name} desactivado exitosamente.`);
+                setUserToDeactivate(null);
+            },
+            onError: () => {
+                toast.error(`Hubo un error al desactivar el agente ${userToDeactivate.name}.`);
+                setUserToDeactivate(null);
+            },
         });
     };
 
@@ -140,7 +165,7 @@ export default function AgentsPage() {
                         <>
                             {/* Mobile Cards */}
                             <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-                                {agents.map((agent: any) => (
+                                {agents.map((agent: AdminAgent) => (
                                     <div
                                         key={agent.id}
                                         onClick={() => handleRowClick(agent.id)}
@@ -157,9 +182,24 @@ export default function AgentsPage() {
                                         <div className="text-sm text-slate-500 space-y-1">
                                             <p>{agent.email}</p>
                                             <p>{agent.phone || 'Sin teléfono'}</p>
-                                            <div className="flex gap-4">
+                                            <div className="flex gap-4 items-center">
                                                 <span>{agent.resort_count || 0} resorts</span>
                                                 <span>{agent.booking_count || 0} reservas</span>
+                                                {agent.is_active === false && (
+                                                    <Badge variant="danger" className="ml-auto">Inactivo</Badge>
+                                                )}
+                                                {agent.is_active !== false && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={(e: React.MouseEvent) => handleDeactivate(e, agent.id, agent.full_name || 'Sin nombre')}
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-auto px-2"
+                                                        title="Desactivar agente"
+                                                        disabled={deactivateUser.isPending}
+                                                    >
+                                                        <UserX className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -178,10 +218,12 @@ export default function AgentsPage() {
                                             <TableHead>Reservas</TableHead>
                                             <TableHead>Comisiones</TableHead>
                                             <TableHead>Registro</TableHead>
+                                            <TableHead>Estado</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {agents.map((agent: any) => (
+                                        {agents.map((agent: AdminAgent) => (
                                             <TableRow
                                                 key={agent.id}
                                                 onClick={() => handleRowClick(agent.id)}
@@ -209,6 +251,27 @@ export default function AgentsPage() {
                                                 </TableCell>
                                                 <TableCell className="text-slate-500">
                                                     {formatDate(agent.created_at)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {agent.is_active === false ? (
+                                                        <Badge variant="danger">Inactivo</Badge>
+                                                    ) : (
+                                                        <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0">Activo</Badge>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {agent.is_active !== false && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={(e: React.MouseEvent) => handleDeactivate(e, agent.id, agent.full_name || 'Sin nombre')}
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2"
+                                                            title="Desactivar agente"
+                                                            disabled={deactivateUser.isPending}
+                                                        >
+                                                            <UserX className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -284,6 +347,27 @@ export default function AgentsPage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Deactivation Modal */}
+            <Modal
+                isOpen={!!userToDeactivate}
+                onClose={() => setUserToDeactivate(null)}
+                title="Desactivar Agente"
+                description={`¿Estás seguro que deseas desactivar al agente ${userToDeactivate?.name}?`}
+            >
+                <p className="text-slate-600 dark:text-slate-400">
+                    Al desactivar a este agente, este usuario no podrá acceder a la plataforma. Podrás volver a habilitarlo en cualquier momento.
+                </p>
+                <ModalFooter>
+                    <Button variant="outline" onClick={() => setUserToDeactivate(null)} disabled={deactivateUser.isPending}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={confirmDeactivate} disabled={deactivateUser.isPending}>
+                        {deactivateUser.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserX className="w-4 h-4 mr-2" />}
+                        Desactivar
+                    </Button>
+                </ModalFooter>
+            </Modal>
         </div>
     );
 }

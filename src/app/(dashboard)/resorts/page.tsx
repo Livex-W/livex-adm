@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAdminResorts } from '@/hooks/useAdmin';
+import { useAdminResorts, useDeactivateUser } from '@/hooks/useAdmin';
 import { Card, CardContent, StatusBadge, Button, Input } from '@/components/ui';
-import { Building2, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Modal, ModalFooter } from '@/components/ui/modal';
+import { toast } from 'sonner';
+import { Building2, Search, Loader2, ChevronLeft, ChevronRight, UserX } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 type ResortStatus = 'all' | 'draft' | 'under_review' | 'approved' | 'rejected';
@@ -39,9 +41,12 @@ export default function ResortsPage() {
     const [statusFilter, setStatusFilter] = useState<ResortStatus>('all');
     const [searchInput, setSearchInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [userToDeactivate, setUserToDeactivate] = useState<{ id: string, name: string } | null>(null);
 
     // Debounce search input by 400ms
     const debouncedSearch = useDebounce(searchInput, 400);
+
+    const deactivateUser = useDeactivateUser();
 
     // Use React Query with caching
     const { data, isLoading: resortsLoading } = useAdminResorts({
@@ -76,6 +81,26 @@ export default function ResortsPage() {
             'draft': 'draft',
         };
         return <StatusBadge status={statusMap[status] || 'draft'} />;
+    };
+
+    const handleDeactivate = (e: React.MouseEvent, ownerId: string, name: string) => {
+        e.stopPropagation();
+        setUserToDeactivate({ id: ownerId, name });
+    };
+
+    const confirmDeactivate = () => {
+        if (!userToDeactivate) return;
+
+        deactivateUser.mutate(userToDeactivate.id, {
+            onSuccess: () => {
+                toast.success(`Resort (dueño ${userToDeactivate.name}) desactivado exitosamente.`);
+                setUserToDeactivate(null);
+            },
+            onError: () => {
+                toast.error(`Hubo un error al desactivar al resort.`);
+                setUserToDeactivate(null);
+            },
+        });
     };
 
     return (
@@ -168,10 +193,29 @@ export default function ResortsPage() {
                                             {getStatusBadge(resort.status)}
                                         </div>
                                         <div className="text-sm text-slate-500 space-y-1">
-                                            <p>{resort.contact_email || 'Sin email'}</p>
+                                            <p>{resort.owner_email || 'Sin email'}</p>
                                             <p>{resort.city || 'Sin ciudad'}</p>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${resort.owner_is_active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {resort.owner_is_active !== false ? 'Activo' : 'Inactivo'}
+                                                </span>
+                                            </div>
                                             <p className="text-xs">{formatDate(resort.created_at)}</p>
                                         </div>
+                                        {resort.owner_is_active !== false && (
+                                            <div className="mt-2 flex justify-end">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={(e: React.MouseEvent) => handleDeactivate(e, resort.owner_user_id, resort.name || 'Sin nombre')}
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2"
+                                                    title="Desactivar resort"
+                                                    disabled={deactivateUser.isPending}
+                                                >
+                                                    <UserX className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -185,7 +229,9 @@ export default function ResortsPage() {
                                             <th className="px-6 py-3 text-left font-medium text-slate-500">Email</th>
                                             <th className="px-6 py-3 text-left font-medium text-slate-500">Ciudad</th>
                                             <th className="px-6 py-3 text-left font-medium text-slate-500">Estado</th>
+                                            <th className="px-6 py-3 text-left font-medium text-slate-500">Activo</th>
                                             <th className="px-6 py-3 text-left font-medium text-slate-500">Fecha</th>
+                                            <th className="px-6 py-3 text-right font-medium text-slate-500">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -201,7 +247,7 @@ export default function ResortsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-slate-500">
-                                                    {resort.contact_email || '-'}
+                                                    {resort.owner_email || '-'}
                                                 </td>
                                                 <td className="px-6 py-4 text-slate-500">
                                                     {resort.city || '-'}
@@ -209,8 +255,27 @@ export default function ResortsPage() {
                                                 <td className="px-6 py-4">
                                                     {getStatusBadge(resort.status)}
                                                 </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${resort.owner_is_active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                        {resort.owner_is_active !== false ? 'Activo' : 'Inactivo'}
+                                                    </span>
+                                                </td>
                                                 <td className="px-6 py-4 text-slate-500">
                                                     {formatDate(resort.created_at)}
+                                                </td>
+                                                <td className="px-6 py-4 flex justify-end">
+                                                    {resort.owner_is_active !== false && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={(e: React.MouseEvent) => handleDeactivate(e, resort.owner_user_id, resort.name || 'Sin nombre')}
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2"
+                                                            title="Desactivar resort"
+                                                            disabled={deactivateUser.isPending}
+                                                        >
+                                                            <UserX className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -286,6 +351,27 @@ export default function ResortsPage() {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Deactivation Modal */}
+            <Modal
+                isOpen={!!userToDeactivate}
+                onClose={() => setUserToDeactivate(null)}
+                title="Desactivar Resort"
+                description={`¿Estás seguro que deseas desactivar el resort ${userToDeactivate?.name}?`}
+            >
+                <p className="text-slate-600 dark:text-slate-400">
+                    Al desactivar a este resort (dueño), el usuario no podrá acceder a la plataforma. Podrás volver a habilitarlo en cualquier momento.
+                </p>
+                <ModalFooter>
+                    <Button variant="outline" onClick={() => setUserToDeactivate(null)} disabled={deactivateUser.isPending}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={confirmDeactivate} disabled={deactivateUser.isPending}>
+                        {deactivateUser.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UserX className="w-4 h-4 mr-2" />}
+                        Desactivar
+                    </Button>
+                </ModalFooter>
+            </Modal>
         </div>
     );
 }
