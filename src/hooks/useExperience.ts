@@ -50,7 +50,6 @@ interface ExperienceListItem {
     duration_minutes?: number;
     max_capacity?: number;
     images?: ExperienceImage[];
-    is_active?: boolean;
 }
 
 interface PaginatedResponse<T> {

@@ -234,7 +234,7 @@ export default function ExperiencesPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <StatusBadge status={!exp.is_active ? 'inactive' : exp.status || 'draft'} />
+                                                        <StatusBadge status={exp.status || 'draft'} />
                                                     </TableCell>
                                                 </TableRow>
                                             );
@@ -276,7 +276,7 @@ export default function ExperiencesPage() {
                                                         <h3 className="font-semibold text-slate-900 dark:text-slate-100 line-clamp-1">
                                                             {exp.title}
                                                         </h3>
-                                                        <StatusBadge status={!exp.is_active ? 'inactive' : exp.status || 'draft'} />
+                                                        <StatusBadge status={exp.status || 'draft'} />
                                                     </div>
 
                                                     <div className="mt-1 flex flex-wrap items-center gap-2">

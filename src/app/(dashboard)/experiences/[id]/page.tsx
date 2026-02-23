@@ -99,12 +99,12 @@ export default function ExperienceDetailPage() {
                         </h1>
                         <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="capitalize">{getCategoryName(experience.category)}</Badge>
-                            <StatusBadge status={!experience.is_active ? 'inactive' : experience.status || 'draft'} />
+                            <StatusBadge status={experience.status || 'draft'} />
                         </div>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {!experience.is_active ? (
+                    {experience.status === 'inactive' ? (
                         <Button
                             variant="primary"
                             leftIcon={<CheckCircle className="h-4 w-4" />}
