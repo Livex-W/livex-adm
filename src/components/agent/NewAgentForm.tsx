@@ -2,13 +2,13 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button, Card, Input, PhoneInput, PasswordInput } from '@/components/ui';
 import { Save } from 'lucide-react';
 import { useAgentsStore } from '@/lib/agents-store';
 import { ROUTES } from '@/routes';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { CreateAgentFormData, createAgentSchema } from '@/schemas';
 
 const DOCUMENT_TYPES = [
     { value: 'CC', label: 'Cédula de Ciudadanía' },
@@ -16,30 +16,6 @@ const DOCUMENT_TYPES = [
     { value: 'CE', label: 'Cédula de Extranjería' },
     { value: 'PASSPORT', label: 'Pasaporte' },
 ] as const;
-
-const createAgentSchema = z.object({
-    fullName: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-    documentType: z.enum(['CC', 'NIT', 'CE', 'PASSPORT'], {
-        message: 'Selecciona el tipo de documento',
-    }),
-    documentNumber: z.string().min(5, 'El documento debe tener al menos 5 caracteres'),
-    email: z.email('Email inválido'),
-    phone: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
-    password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-    nit: z.string().optional()
-        .refine(val => !val || /^\d{9}-\d$/.test(val), { message: 'El NIT debe tener el formato 123456789-0' }),
-    rnt: z.string().optional()
-        .refine(val => !val || /^\d{5}$/.test(val), { message: 'El RNT debe tener exactamente 5 dígitos' }),
-    commissionAmount: z.string().refine(
-        (val) => {
-            const num = parseFloat(val);
-            return !isNaN(num) && num >= 0;
-        },
-        { message: 'Debe ser un monto válido' }
-    ),
-});
-
-type CreateAgentFormData = z.infer<typeof createAgentSchema>;
 
 export default function NewAgentForm() {
     const router = useRouter();
@@ -57,7 +33,6 @@ export default function NewAgentForm() {
             password: '',
             nit: '',
             rnt: '',
-            commissionAmount: '50000',
         },
     });
 
@@ -177,20 +152,6 @@ export default function NewAgentForm() {
                             helperText="Registro Nacional de Turismo"
                         />
                     </div>
-
-                    <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 border-b pb-2 pt-4">
-                        Configuración de Comisión
-                    </h3>
-
-                    <Input
-                        label="Comisión por Venta (COP)"
-                        type="number"
-                        min="0"
-                        step="1000"
-                        {...form.register('commissionAmount')}
-                        error={form.formState.errors.commissionAmount?.message}
-                        helperText="Monto fijo en pesos por cada venta realizada por este agente"
-                    />
                 </div>
 
                 <div className="flex justify-end pt-4">
